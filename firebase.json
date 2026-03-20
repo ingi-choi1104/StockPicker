@@ -1,0 +1,37 @@
+{
+  "functions": {
+    "source": "functions",
+    "codebase": "default",
+    "ignore": [
+      "node_modules",
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "*.local"
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "stockpicker-55692",
+          "appId": "1:944249240157:android:a14d7018ffcf8b352d6bb4",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "stockpicker-55692",
+          "configurations": {
+            "android": "1:944249240157:android:a14d7018ffcf8b352d6bb4",
+            "ios": "1:944249240157:ios:5df836d7cf10aa292d6bb4"
+          }
+        }
+      }
+    }
+  }
+}

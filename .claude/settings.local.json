@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter pub:*)",
+      "Bash(flutter analyze:*)",
+      "WebSearch",
+      "WebFetch(domain:www.samsungpop.com)",
+      "WebFetch(domain:securities.miraeasset.com)",
+      "WebFetch(domain:www.kbsec.com)",
+      "WebFetch(domain:www.kiwoom.com)",
+      "WebFetch(domain:www.nhqv.com)",
+      "WebFetch(domain:www.daishin.com)",
+      "WebFetch(domain:www.nhsec.com)",
+      "WebFetch(domain:truefriend.com)",
+      "WebFetch(domain:digitalshinhansec.com)",
+      "WebFetch(domain:contents.tossinvest.com)",
+      "WebFetch(domain:kakaopaysec.com)",
+      "Bash(sed:*)",
+      "WebFetch(domain:www.truefriend.com)",
+      "WebFetch(domain:www.shinhansec.com)",
+      "WebFetch(domain:nhsec.com)",
+      "WebFetch(domain:www1.kiwoom.com)",
+      "Bash(grep -r \"applicationId\\\\|namespace\" D:/Files/Flutter/stockpicker/android/app/build.gradle 2>/dev/null\ngrep \"package\" D:/Files/Flutter/stockpicker/android/app/src/main/AndroidManifest.xml\nfind D:/Files/Flutter/stockpicker/android/app/src/main/kotlin -name \"*.kt\" 2>/dev/null\ngrep \"PRODUCT_BUNDLE_IDENTIFIER\" D:/Files/Flutter/stockpicker/ios/Runner.xcodeproj/project.pbxproj | head -5)",
+      "Bash(firebase init:*)",
+      "WebFetch(domain:m.kbsec.com)",
+      "WebFetch(domain:m.kiwoom.com)",
+      "WebFetch(domain:m.truefriend.com)",
+      "WebFetch(domain:www.shinhaninvest.com)",
+      "Bash(claude install:*)",
+      "Bash(ls:*)",
+      "Bash(cd:*)"
+    ]
+  }
+}

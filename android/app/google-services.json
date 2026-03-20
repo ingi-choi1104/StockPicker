@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "944249240157",
+    "project_id": "stockpicker-55692",
+    "storage_bucket": "stockpicker-55692.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:944249240157:android:a14d7018ffcf8b352d6bb4",
+        "android_client_info": {
+          "package_name": "com.dobby.stockpicker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrqilsQuFpb6gdzYB8WR9_ECalCsKM94w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
