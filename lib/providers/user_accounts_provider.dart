@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_account.dart';
 import '../models/brokerage_event.dart';
+import '../models/participated_event.dart';
 
 class RecommendedEvent {
   final BrokerageEvent event;
@@ -59,10 +60,22 @@ class UserAccountsProvider extends ChangeNotifier {
       _accounts.where((a) => a.type == type).toList();
 
   /// 계좌 정보 기반 추천 이벤트 목록
-  /// - ISA/IRP/개인연금: 현재 보유 증권사 제외, 해당 카테고리 진행 이벤트
+  /// - ISA/IRP/개인연금/RIA: 현재 보유 증권사 제외, 해당 카테고리 진행 이벤트
   /// - 일반 주거래: 현재 보유 증권사 제외, 순입금 관련 이벤트
-  List<RecommendedEvent> getRecommendations(List<BrokerageEvent> allEvents) {
+  /// - 참여 후 수령 전 계좌 종류는 해당 카테고리 전체 추천에서 제외
+  List<RecommendedEvent> getRecommendations(
+    List<BrokerageEvent> allEvents, {
+    List<ParticipatedEvent> participatedEvents = const [],
+  }) {
     if (_accounts.isEmpty) return [];
+
+    // 수령 전(미완료) 참여 이벤트의 카테고리 → 해당 계좌 종류 전체 제외
+    final excludedCategories = <EventCategory>{};
+    for (final p in participatedEvents) {
+      if (!p.isCompleted) {
+        excludedCategories.add(p.category);
+      }
+    }
 
     final active = allEvents.where((e) => e.isActive).toList();
     final result = <RecommendedEvent>[];
@@ -75,12 +88,15 @@ class UserAccountsProvider extends ChangeNotifier {
       }
     }
 
-    // ISA / IRP / 개인연금: 카테고리 매칭
-    for (final type in [AccountType.isa, AccountType.irp, AccountType.pension]) {
+    // ISA / IRP / 개인연금 / RIA: 카테고리 매칭
+    for (final type in [AccountType.isa, AccountType.irp, AccountType.pension, AccountType.ria]) {
+      // 해당 계좌 종류로 참여 후 수령 대기중이면 전체 스킵
+      final categories = type.matchingCategories!;
+      if (categories.any((c) => excludedCategories.contains(c))) continue;
+
       final held = accountsOfType(type).map((a) => a.brokerage).toSet();
       if (held.isEmpty) continue;
 
-      final categories = type.matchingCategories!;
       for (final e in active) {
         if (categories.contains(e.category) && !held.contains(e.brokerage)) {
           add(e, type);

@@ -42,10 +42,17 @@ class FirestoreService {
         (e) => e.toString() == brokerageStr,
         orElse: () => BrokerageType.samsung, // unknown → 삼성 fallback
       );
-      final category = EventCategory.values.firstWhere(
+      var category = EventCategory.values.firstWhere(
         (e) => e.toString() == categoryStr,
         orElse: () => EventCategory.other,
       );
+
+      // 제목 기반 재분류 (Firestore에 없던 카테고리 보정)
+      final title = data['title'] as String? ?? '';
+      final guessed = guessCategory(title);
+      if (category == EventCategory.other && guessed != EventCategory.other) {
+        category = guessed;
+      }
 
       DateTime parseTs(dynamic val) {
         if (val is Timestamp) return val.toDate();

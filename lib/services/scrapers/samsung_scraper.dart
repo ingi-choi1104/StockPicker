@@ -80,7 +80,7 @@ class SamsungScraper extends BaseScraper {
           title: title,
           description: description.length > 200 ? '${description.substring(0, 200)}...' : description,
           brokerage: brokerageType,
-          category: _guessCategory(title),
+          category: guessCategory(title),
           startDate: startDate,
           endDate: endDate,
           eventUrl: eventUrl,
@@ -112,12 +112,4 @@ class SamsungScraper extends BaseScraper {
     }
   }
 
-  EventCategory _guessCategory(String title) {
-    if (title.contains('수수료') || title.contains('할인')) return EventCategory.feeDiscount;
-    if (title.contains('신규') || title.contains('계좌')) return EventCategory.newAccount;
-    if (title.contains('추천') || title.contains('친구')) return EventCategory.referral;
-    if (title.contains('적립') || title.contains('포인트') || title.contains('리워드')) return EventCategory.reward;
-    if (title.contains('매매') || title.contains('거래') || title.contains('선물') || title.contains('옵션')) return EventCategory.trading;
-    return EventCategory.other;
-  }
 }

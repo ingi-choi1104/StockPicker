@@ -72,7 +72,7 @@ class ShinhanScraper extends BaseScraper {
           title: title,
           description: title,
           brokerage: brokerageType,
-          category: _guessCategory(title),
+          category: guessCategory(title),
           startDate: startDate,
           endDate: endDate,
           eventUrl: eventUrl,
@@ -125,7 +125,7 @@ class ShinhanScraper extends BaseScraper {
           title: title,
           description: title,
           brokerage: brokerageType,
-          category: _guessCategory(title),
+          category: guessCategory(title),
           startDate: dateMatches.isNotEmpty
               ? parseDate(dateMatches.first.group(0)) ?? DateTime.now()
               : DateTime.now(),
@@ -142,12 +142,4 @@ class ShinhanScraper extends BaseScraper {
     }
   }
 
-  EventCategory _guessCategory(String title) {
-    if (title.contains('수수료') || title.contains('할인')) return EventCategory.feeDiscount;
-    if (title.contains('신규') || title.contains('계좌')) return EventCategory.newAccount;
-    if (title.contains('추천') || title.contains('친구')) return EventCategory.referral;
-    if (title.contains('적립') || title.contains('포인트')) return EventCategory.reward;
-    if (title.contains('매매') || title.contains('거래')) return EventCategory.trading;
-    return EventCategory.other;
-  }
 }

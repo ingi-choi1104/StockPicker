@@ -2,7 +2,7 @@ name: stockpicker
 description: "증권사 이벤트 모아보기 앱"
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ^3.10.4

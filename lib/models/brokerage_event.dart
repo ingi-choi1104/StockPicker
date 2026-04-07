@@ -1,12 +1,13 @@
 enum EventCategory {
+  isa, // ISA
+  irp, // IRP/퇴직연금
+  pension, // 개인연금
+  ria, // RIA
   feeDiscount, // 수수료 혜택
   newAccount, // 신규 계좌 개설
   reward, // 적립금/리워드
   referral, // 추천인
   trading, // 매매 이벤트
-  isa, // ISA
-  irp, // IRP/퇴직연금
-  pension, // 개인연금
   exchange, // 환율우대
   other, // 기타
 }
@@ -130,6 +131,14 @@ extension BrokerageTypeExt on BrokerageType {
 extension EventCategoryExt on EventCategory {
   String get label {
     switch (this) {
+      case EventCategory.isa:
+        return 'ISA';
+      case EventCategory.irp:
+        return 'IRP';
+      case EventCategory.pension:
+        return '개인연금';
+      case EventCategory.ria:
+        return 'RIA';
       case EventCategory.feeDiscount:
         return '수수료 혜택';
       case EventCategory.newAccount:
@@ -140,12 +149,6 @@ extension EventCategoryExt on EventCategory {
         return '추천인';
       case EventCategory.trading:
         return '매매 이벤트';
-      case EventCategory.isa:
-        return 'ISA';
-      case EventCategory.irp:
-        return 'IRP';
-      case EventCategory.pension:
-        return '개인연금';
       case EventCategory.exchange:
         return '환율우대';
       case EventCategory.other:
@@ -155,6 +158,14 @@ extension EventCategoryExt on EventCategory {
 
   int get color {
     switch (this) {
+      case EventCategory.isa:
+        return 0xFF00897B; // 틸
+      case EventCategory.irp:
+        return 0xFF7B1FA2; // 보라
+      case EventCategory.pension:
+        return 0xFF0288D1; // 하늘
+      case EventCategory.ria:
+        return 0xFF5C6BC0; // 인디고
       case EventCategory.feeDiscount:
         return 0xFF2196F3;
       case EventCategory.newAccount:
@@ -165,18 +176,27 @@ extension EventCategoryExt on EventCategory {
         return 0xFF9C27B0;
       case EventCategory.trading:
         return 0xFFE91E63;
-      case EventCategory.isa:
-        return 0xFF00897B; // 틸
-      case EventCategory.irp:
-        return 0xFF7B1FA2; // 보라
-      case EventCategory.pension:
-        return 0xFF0288D1; // 하늘
       case EventCategory.exchange:
         return 0xFFF57C00; // 주황
       case EventCategory.other:
         return 0xFF607D8B;
     }
   }
+}
+
+/// 제목 기반 카테고리 추측 (스크래퍼 + Firestore 공용)
+EventCategory guessCategory(String title) {
+  if (title.contains('ISA') || title.contains('isa')) return EventCategory.isa;
+  if (title.contains('IRP') || title.contains('irp') || title.contains('퇴직연금') || title.contains('DC')) return EventCategory.irp;
+  if (title.contains('연금') && !title.contains('퇴직연금')) return EventCategory.pension;
+  if (title.contains('RIA') || title.contains('ria') || title.contains('로보') || title.contains('투자일임')) return EventCategory.ria;
+  if (title.contains('환율') || title.contains('환전')) return EventCategory.exchange;
+  if (title.contains('수수료') || title.contains('할인') || title.contains('우대')) return EventCategory.feeDiscount;
+  if (title.contains('신규') || title.contains('계좌')) return EventCategory.newAccount;
+  if (title.contains('추천') || title.contains('친구')) return EventCategory.referral;
+  if (title.contains('적립') || title.contains('포인트') || title.contains('리워드')) return EventCategory.reward;
+  if (title.contains('매매') || title.contains('거래') || title.contains('ETF') || title.contains('선물') || title.contains('옵션')) return EventCategory.trading;
+  return EventCategory.other;
 }
 
 class BrokerageEvent {

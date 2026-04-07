@@ -43,7 +43,7 @@ class StockPickerApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: userAccountsProvider),
       ],
       child: MaterialApp(
-        title: '증권사 이벤트',
+        title: '스탁피커',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(

@@ -1,6 +1,6 @@
 import 'brokerage_event.dart';
 
-enum AccountType { isa, irp, pension, general }
+enum AccountType { isa, irp, pension, ria, general }
 
 extension AccountTypeExt on AccountType {
   String get label {
@@ -11,6 +11,8 @@ extension AccountTypeExt on AccountType {
         return 'IRP';
       case AccountType.pension:
         return '개인연금';
+      case AccountType.ria:
+        return 'RIA';
       case AccountType.general:
         return '일반 주거래';
     }
@@ -24,6 +26,8 @@ extension AccountTypeExt on AccountType {
         return '개인형 퇴직연금';
       case AccountType.pension:
         return '개인연금';
+      case AccountType.ria:
+        return '로보어드바이저 투자일임';
       case AccountType.general:
         return '순입금 이벤트 탐색';
     }
@@ -37,12 +41,14 @@ extension AccountTypeExt on AccountType {
         return 0xFF7B1FA2;
       case AccountType.pension:
         return 0xFF0288D1;
+      case AccountType.ria:
+        return 0xFF5C6BC0;
       case AccountType.general:
         return 0xFF455A64;
     }
   }
 
-  /// ISA/IRP/개인연금은 매칭 카테고리, 일반주거래는 null (키워드 매칭)
+  /// ISA/IRP/개인연금/RIA는 매칭 카테고리, 일반주거래는 null (키워드 매칭)
   List<EventCategory>? get matchingCategories {
     switch (this) {
       case AccountType.isa:
@@ -51,6 +57,8 @@ extension AccountTypeExt on AccountType {
         return [EventCategory.irp];
       case AccountType.pension:
         return [EventCategory.pension];
+      case AccountType.ria:
+        return [EventCategory.ria];
       case AccountType.general:
         return null;
     }

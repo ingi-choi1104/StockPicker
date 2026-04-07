@@ -3,12 +3,27 @@ import 'package:provider/provider.dart';
 import '../models/user_account.dart';
 import '../providers/events_provider.dart';
 import '../providers/user_accounts_provider.dart';
+import '../providers/participated_events_provider.dart';
 import '../widgets/event_card.dart';
 import 'event_detail_screen.dart';
 import 'account_registration_screen.dart';
 
-class RecommendedEventsScreen extends StatelessWidget {
+class RecommendedEventsScreen extends StatefulWidget {
   const RecommendedEventsScreen({super.key});
+
+  @override
+  State<RecommendedEventsScreen> createState() =>
+      _RecommendedEventsScreenState();
+}
+
+class _RecommendedEventsScreenState extends State<RecommendedEventsScreen> {
+  final Map<AccountType, bool> _expanded = {};
+
+  bool _isExpanded(AccountType type) => _expanded[type] ?? true;
+
+  void _toggle(AccountType type) {
+    setState(() => _expanded[type] = !_isExpanded(type));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +44,10 @@ class RecommendedEventsScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Consumer2<UserAccountsProvider, EventsProvider>(
-        builder: (context, accountsProvider, eventsProvider, _) {
+      body: Consumer3<UserAccountsProvider, EventsProvider,
+          ParticipatedEventsProvider>(
+        builder: (context, accountsProvider, eventsProvider,
+            participatedProvider, _) {
           if (!accountsProvider.hasAccounts) {
             return _EmptyAccounts(
               onRegister: () => Navigator.push(
@@ -42,7 +59,10 @@ class RecommendedEventsScreen extends StatelessWidget {
           }
 
           final allEvents = eventsProvider.allEvents;
-          final recommendations = accountsProvider.getRecommendations(allEvents);
+          final recommendations = accountsProvider.getRecommendations(
+            allEvents,
+            participatedEvents: participatedProvider.events,
+          );
 
           if (recommendations.isEmpty) {
             return Center(
@@ -68,10 +88,10 @@ class RecommendedEventsScreen extends StatelessWidget {
           }
 
           // AccountType별로 그룹핑
-          final grouped = <AccountType, List<_Item>>{};
+          final grouped = <AccountType, List<RecommendedEvent>>{};
           for (final rec in recommendations) {
             grouped.putIfAbsent(rec.reason, () => []);
-            grouped[rec.reason]!.add(_Item(rec));
+            grouped[rec.reason]!.add(rec);
           }
 
           return ListView(
@@ -79,29 +99,41 @@ class RecommendedEventsScreen extends StatelessWidget {
             children: [
               for (final type in AccountType.values)
                 if (grouped.containsKey(type)) ...[
-                  _SectionHeader(
+                  _buildSectionHeader(
                     type: type,
+                    count: grouped[type]!.length,
                     heldBrokerages: accountsProvider
                         .accountsOfType(type)
                         .map((a) => a.brokerage.name)
                         .join(', '),
                   ),
-                  ...grouped[type]!.map(
-                    (item) => Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: EventCard(
-                        event: item.rec.event,
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                EventDetailScreen(event: item.rec.event),
-                          ),
-                        ),
-                        onBookmark: () => eventsProvider
-                            .toggleBookmark(item.rec.event.id),
-                      ),
-                    ),
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    child: _isExpanded(type)
+                        ? Column(
+                            children: grouped[type]!
+                                .map(
+                                  (rec) => Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12),
+                                    child: EventCard(
+                                      event: rec.event,
+                                      onTap: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => EventDetailScreen(
+                                              event: rec.event),
+                                        ),
+                                      ),
+                                      onBookmark: () => eventsProvider
+                                          .toggleBookmark(rec.event.id),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          )
+                        : const SizedBox(width: double.infinity, height: 0),
                   ),
                   const SizedBox(height: 8),
                 ],
@@ -111,52 +143,60 @@ class RecommendedEventsScreen extends StatelessWidget {
       ),
     );
   }
-}
 
-class _Item {
-  final dynamic rec;
-  _Item(this.rec);
-}
-
-// ─── 섹션 헤더 ───────────────────────────────────────────────────
-class _SectionHeader extends StatelessWidget {
-  final AccountType type;
-  final String heldBrokerages;
-
-  const _SectionHeader(
-      {required this.type, required this.heldBrokerages});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildSectionHeader({
+    required AccountType type,
+    required int count,
+    required String heldBrokerages,
+  }) {
     final color = Color(type.color);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      child: Row(
-        children: [
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(8),
+    final expanded = _isExpanded(type);
+    return GestureDetector(
+      onTap: () => _toggle(type),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
+        child: Row(
+          children: [
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                type.label,
+                style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
             ),
-            child: Text(
-              type.label,
-              style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+            const SizedBox(width: 8),
+            Text(
+              '$count',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              '현재: $heldBrokerages',
-              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-              overflow: TextOverflow.ellipsis,
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '보유: $heldBrokerages',
+                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
-        ],
+            AnimatedRotation(
+              turns: expanded ? 0.0 : 0.5,
+              duration: const Duration(milliseconds: 200),
+              child: Icon(Icons.expand_less,
+                  size: 20, color: Colors.grey[400]),
+            ),
+          ],
+        ),
       ),
     );
   }

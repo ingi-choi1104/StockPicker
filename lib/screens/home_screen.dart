@@ -6,6 +6,7 @@ import '../providers/participated_events_provider.dart';
 import '../providers/user_accounts_provider.dart';
 import '../widgets/event_card.dart';
 import '../widgets/banner_ad_widget.dart';
+import '../widgets/tutorial_overlay.dart';
 import 'account_registration_screen.dart';
 import 'event_detail_screen.dart';
 import 'participated_events_screen.dart';
@@ -30,7 +31,15 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<EventsProvider>().loadEvents();
+      _maybeShowTutorial();
     });
+  }
+
+  Future<void> _maybeShowTutorial() async {
+    final should = await checkShouldShowTutorial();
+    if (should && mounted) {
+      showTutorialOverlay(context);
+    }
   }
 
   @override
@@ -87,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      '증권사 이벤트',
+                      '스탁피커',
                       style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     ),
                     if (provider.loadingState == LoadingState.loaded)
@@ -126,6 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Badge(
             label: Text('${provider.bookmarkCount}'),
             child: IconButton(
+              key: TutorialKeys.bookmarkBtn,
               icon: Icon(
                 provider.showBookmarkedOnly
                     ? Icons.bookmark
@@ -142,6 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context, prov, _) {
             final count = prov.count;
             final btn = IconButton(
+              key: TutorialKeys.participatedBtn,
               icon: const Icon(Icons.assignment_turned_in_outlined),
               iconSize: 22,
               color: count > 0 ? Colors.grey[600] : Colors.grey[400],
@@ -157,6 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
         InkWell(
+          key: TutorialKeys.myAccountBtn,
           borderRadius: BorderRadius.circular(20),
           onTap: () => Navigator.push(
             context,
@@ -181,6 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         IconButton(
+          key: TutorialKeys.timelineBtn,
           icon: const Icon(Icons.timeline),
           iconSize: 22,
           color: Colors.grey[600],
@@ -189,6 +202,13 @@ class _HomeScreenState extends State<HomeScreen> {
             context,
             MaterialPageRoute(builder: (_) => const MyEventsScreen()),
           ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.help_outline),
+          iconSize: 20,
+          color: Colors.grey[400],
+          tooltip: '사용법 보기',
+          onPressed: () => showTutorialOverlay(context),
         ),
       ],
     );
@@ -244,6 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return GestureDetector(
           onTap: () => setState(() => _filtersExpanded = !_filtersExpanded),
           child: Container(
+            key: TutorialKeys.filterRow,
             color: Colors.white,
             padding: const EdgeInsets.fromLTRB(16, 6, 12, 6),
             margin: const EdgeInsets.only(bottom: 2),
@@ -428,12 +449,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ─── 추천 배너 ─────────────────────────────────────────────────
   Widget _buildRecommendationBanner() {
-    return Consumer2<UserAccountsProvider, EventsProvider>(
-      builder: (context, accountsProvider, eventsProvider, _) {
+    return Consumer3<UserAccountsProvider, EventsProvider, ParticipatedEventsProvider>(
+      builder: (context, accountsProvider, eventsProvider, participatedProvider, _) {
         if (!accountsProvider.hasAccounts) return const SizedBox.shrink();
 
         final count =
-            accountsProvider.getRecommendations(eventsProvider.allEvents).length;
+            accountsProvider.getRecommendations(
+              eventsProvider.allEvents,
+              participatedEvents: participatedProvider.events,
+            ).length;
 
         return GestureDetector(
           onTap: () => Navigator.push(
